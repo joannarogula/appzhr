@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import bcrypt from 'bcryptjs'; // Importowanie bcryptjs
 import config from '../../config'; // Importowanie konfiguracji z adresem API
-import { useNavigation } from '@react-navigation/native';
-import { Colors, FontSizes, Spacing } from '../../theme';
+import {useNavigation} from '@react-navigation/native';
+import {Colors, FontSizes, Spacing} from '../../theme';
 
-
-
-function RegisterScreen(){
+function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,15 +44,14 @@ function RegisterScreen(){
         },
         body: JSON.stringify({
           email,
-          password
+          password,
         }),
       });
-
 
       if (response.status === 201) {
         Alert.alert('Sukces', 'Rejestracja zakończona sukcesem!');
         // navigation.navigate('Login');
-        navigation.goBack()
+        navigation.goBack();
       }
     } catch (error) {
       Alert.alert('Błąd', 'Wystąpił problem podczas rejestracji.');
@@ -83,7 +88,9 @@ function RegisterScreen(){
         secureTextEntry
       />
 
-      <Button title="Zarejestruj się" onPress={handleRegister} />
+      <TouchableOpacity style={styles.addButton} onPress={handleRegister}>
+        <Text style={styles.addButtonText}>Zarejestruj</Text>
+      </TouchableOpacity>
 
       <Text style={styles.footer}>
         Masz już konto?{' '}
@@ -93,7 +100,7 @@ function RegisterScreen(){
       </Text>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -104,9 +111,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   title: {
-    fontSize: 24,
+    fontSize: FontSizes.title,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: Colors.primary,
   },
   input: {
     width: '100%',
@@ -116,7 +124,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     marginBottom: 15,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
   },
   footer: {
     marginTop: 20,
@@ -124,8 +132,19 @@ const styles = StyleSheet.create({
     color: '#888',
   },
   link: {
-    color: '#0066cc',
+    color: Colors.primary,
     textDecorationLine: 'underline',
+  },
+  addButton: {
+    backgroundColor: Colors.primary,
+    padding: Spacing.small,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
 

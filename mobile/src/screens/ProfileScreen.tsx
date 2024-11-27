@@ -18,6 +18,22 @@ const ProfileScreen = ({navigation}: {navigation: any}) =>
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const logout = () => {
+    // Zresetuj dane użytkownika
+    setUserData({
+      email: '',
+      team_name: '',
+      role: ''
+    });
+
+    // Opcjonalnie: Możesz także wyczyścić inne dane, jak tokeny autoryzacyjne lub sesje
+    // np. AsyncStorage.clear() jeśli używasz AsyncStorage do przechowywania tokenów
+
+    // Przekierowanie do ekranu logowania
+    // navigation.navigate('Logowanie'); // Zmieniamy nazwę ekranu na odpowiednią w twojej aplikacji
+    navigation.pop(2)
+  };
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -77,8 +93,8 @@ const ProfileScreen = ({navigation}: {navigation: any}) =>
 
       <TouchableOpacity
         style={styles.backButton}
-        // onPress={() => navigation.navigate('Logowanie')}>
-          onPress={() => navigation.pop(2)}>
+          // onPress={() => navigation.pop(2)}>
+            onPress={logout}>
         <Text style={styles.addButtonText}>Wyloguj się</Text>
       </TouchableOpacity>
     </View>

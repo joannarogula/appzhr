@@ -10,7 +10,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import {Colors, FontSizes, Spacing} from '../../theme';
+import {ButtonProps, Colors, FontSizes, Spacing} from '../../theme';
 import config from '../../config';
 import {getTeamId} from '../../asyncStorage';
 import {
@@ -184,12 +184,12 @@ const TeamDataScreen = ({navigation}: {navigation: any}) => {
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => navigation.navigate('AddPatrol')}>
-          <Text style={styles.buttonText}>Dodaj zastęp</Text>
+          <Text style={styles.buttonText}>DODAJ ZASTĘP</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => navigation.navigate('AddScout')}>
-          <Text style={styles.buttonText}>Dodaj harcerkę</Text>
+          <Text style={styles.buttonText}>DODAJ HARCERKĘ</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: Colors.secondary,
+    backgroundColor: Colors.primary,
     paddingBottom: 20,
   },
   modalContent: {
@@ -253,21 +253,21 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     backgroundColor: Colors.red,
-    padding: 8,
-    borderRadius: 5,
-    marginTop: 12,
+    padding: ButtonProps.padding,
+    borderRadius: ButtonProps.borderRadius,
+    marginTop: ButtonProps.marginTop,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 14,
+    color: Colors.white,
+    fontSize: FontSizes.button,
     textAlign: 'center',
     fontWeight: 'bold',
   },
   addButton: {
     backgroundColor: Colors.secondary,
-    padding: 8,
-    borderRadius: 5,
-    marginTop: 12,
+    padding: ButtonProps.padding,
+    borderRadius: ButtonProps.borderRadius,
+    marginTop: ButtonProps.marginTop,
   },
 });
 

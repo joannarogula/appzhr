@@ -17,9 +17,10 @@ import ProfileScreen from '../screens/ProfileScreen';
 import Icon from 'react-native-vector-icons/Entypo';
 import {Colors, FontSizes, Spacing} from '../theme';
 import {UserContext, UserProvider} from '../context/UserContext';
-import AddPatrol from '../screens/TeamData/AddPatrol';
-import AddScout from '../screens/TeamData/AddScout';
+import AddPatrolScreen from '../screens/TeamData/AddPatrolScreen';
+import AddScoutScreen from '../screens/TeamData/AddScoutScreen';
 import RanksScreen from '../screens/TeamData/RanksScreen';
+import AddRankScreen from '../screens/TeamData/AddRankScreen';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -96,9 +97,10 @@ function AppNavigator() {
           component={DrawerNav}
           options={{headerShown: false}}
         />
-        <Stack.Screen name="AddPatrol" component={AddPatrol} />
-        <Stack.Screen name="AddScout" component={AddScout} />
+        <Stack.Screen name="AddPatrol" component={AddPatrolScreen} />
+        <Stack.Screen name="AddScout" component={AddScoutScreen} />
         <Stack.Screen name="Ranks" component={RanksScreen} />
+        <Stack.Screen name="AddRankScreen" component={AddRankScreen} />
 
       </Stack.Navigator>
     </NavigationContainer>

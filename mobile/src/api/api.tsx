@@ -37,4 +37,20 @@ export const getScouts = async (
     }
   };
 
+  export const getRanks = async (
+    setData: React.Dispatch<React.SetStateAction<any[]>>
+  ) => {
+    try {
+      const response = await fetch(`${config.API_URL}/ranks`); // Dodajemy id do URL
+      if (!response.ok) {
+        throw new Error('Nie udało się pobrać danych');
+      }
+      const data = await response.json(); // Otrzymujemy dane
+      console.log(data)
+  
+      setData(data); // Ustawiamy dane w stanie
+    } catch (error) {
+      console.error('Error fetching data:', error); // Obsługujemy błąd
+    }
+  };
   

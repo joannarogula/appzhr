@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
-import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { View, Text, TextInput, Button, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { Colors, FontSizes, Spacing } from '../../theme';
 // import { UserContext } from '../../context/UserContext';
 
  function LoginScreen(props: {
@@ -11,6 +11,7 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
   const { onLogin, navigation } = props;
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  
  
 
   const handleLogin = () => {
@@ -41,8 +42,10 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
         onChangeText={setPassword}
         secureTextEntry
       />
-
-      <Button title="Zaloguj" onPress={handleLogin} />
+      <TouchableOpacity style={styles.addButton} onPress={handleLogin}>
+        <Text style={styles.addButtonText}>Zaloguj</Text>
+      </TouchableOpacity>
+      
 
       <Text style={styles.footer}>
         Nie masz konta? <Text style={styles.link} onPress={() => navigation.navigate('Register')}>Zarejestruj się</Text>
@@ -57,10 +60,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: Colors.Background,
+    backgroundColor: Colors.background,
   },
   title: {
-    fontSize: 24,
+    fontSize: FontSizes.title,
     fontWeight: 'bold',
     marginBottom: 20,
     color: Colors.primary,
@@ -73,7 +76,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     marginBottom: 15,
-    backgroundColor: Colors.Background,
+    backgroundColor: Colors.white,
   },
   footer: {
     marginTop: 20,
@@ -81,8 +84,19 @@ const styles = StyleSheet.create({
     color: '#888',
   },
   link: {
-    color: '#0066cc',
+    color: Colors.primary,
     textDecorationLine: 'underline',
+  },
+  addButton: {
+    backgroundColor: Colors.primary,
+    padding: Spacing.small,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
 

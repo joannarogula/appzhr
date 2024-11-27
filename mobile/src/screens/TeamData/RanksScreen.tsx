@@ -1,25 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
-import { ParamListBase, RouteProp } from '@react-navigation/native';
+import React, {useEffect, useState} from 'react';
+import {View, Text, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
+import {ParamListBase, RouteProp} from '@react-navigation/native';
 import config from '../../config';
-import { Colors } from '../../theme';
+import {ButtonProps, Colors, FontSizes} from '../../theme';
+// import styles from '../../theme'
+import { GestureHandlerRootView, RectButton, Swipeable } from 'react-native-gesture-handler';
+import {StackNavigationProp} from '@react-navigation/stack';
+import Animated from 'react-native-reanimated';
 
-// Typowanie dla parametrów ekranu
 type RanksScreenRouteProp = RouteProp<ParamListBase, 'Ranks'>;
+type RanksScreenNavigationProp = StackNavigationProp<ParamListBase, 'Ranks'>;
 
 type RanksScreenProps = {
   route: RanksScreenRouteProp;
+  navigation: RanksScreenNavigationProp; // Dodajemy navigation
 };
 
 // Typ dla pojedynczego stopnia
 type Rank = {
+  rankScoutId: string;
   rank_id: string;
   rank_name: string;
   date: string; // Data w formacie ISO
 };
 
-const RanksScreen: React.FC<RanksScreenProps> = ({ route }) => {
-  const { id } = route.params as { id: string };
+const RanksScreen: React.FC<RanksScreenProps> = ({route, navigation}) => {
+  const {id} = route.params as {id: string};
   const [ranks, setRanks] = useState<Rank[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -28,13 +34,23 @@ const RanksScreen: React.FC<RanksScreenProps> = ({ route }) => {
     const fetchRanks = async () => {
       try {
         const response = await fetch(`${config.API_URL}/scouts/${id}/ranks`);
-        const data: Rank[] = await response.json();
+        // const data: Rank[] = await response.json();
+        const text = await response.text(); // Pobieramy odpowiedź jako tekst
+        // console.log(text);
 
-        const processedData = data.map((item) => ({
+        if (!text) {
+          console.log('Brak danych w odpowiedzi serwera.');
+          setRanks([]); // Ustaw pustą listę, jeśli brak danych
+          return;
+        }
+
+        const data: Rank[] = JSON.parse(text); // Parsujemy odpowiedź tylko jeśli istnieje
+
+        const processedData = data.map(item => ({
           ...item,
           date: item.date.split('T')[0], // Usunięcie czasu, pozostaje tylko część daty
         }));
-    
+
         setRanks(processedData);
       } catch (error) {
         console.error('Błąd podczas pobierania stopni:', error);
@@ -44,7 +60,51 @@ const RanksScreen: React.FC<RanksScreenProps> = ({ route }) => {
     };
 
     fetchRanks();
-  }, [id]);
+  }, [ranks]);
+
+   const removeItem = async (rankScoutId: string) => {
+    try {
+      // Wywołanie DELETE na API
+      const response = await fetch(`${config.API_URL}/ranks/${rankScoutId}`, {
+        method: 'DELETE',
+      });
+  
+      if (!response.ok) {
+        console.error('Nie udało się usunąć stopnia. Kod odpowiedzi:', response.status);
+        return;
+      }
+  
+      // Aktualizujemy stan lokalny po pomyślnym usunięciu
+      setRanks((prevRanks) => prevRanks.filter((item) => item.rankScoutId !== rankScoutId));
+    } catch (error) {
+      console.error('Błąd podczas usuwania stopnia:', error);
+    }
+  };
+  
+  const renderRightActions = (rankScoutId: string) => (
+    <TouchableOpacity
+      style={styles.deleteButton}
+      onPress={() => removeItem(rankScoutId)}
+    >
+      <Text style={styles.deleteButtonText}>Usuń</Text>
+    </TouchableOpacity>
+  );
+
+  const renderItem = ({ item }: { item: Rank }) => (
+    <Swipeable
+      renderRightActions={() => renderRightActions(item.rankScoutId)}
+    >
+      <View style={styles.rankItem}>
+        <Text style={styles.rankName}>{item.rank_name}</Text>
+        <Text style={styles.rankDate}>
+          Zdobyto: {new Intl.DateTimeFormat('pl-PL').format(new Date(item.date))}
+        </Text>
+      </View>
+    </Swipeable>
+  );
+
+
+  
 
   if (loading) {
     return (
@@ -57,18 +117,42 @@ const RanksScreen: React.FC<RanksScreenProps> = ({ route }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Stopnie harcerki</Text>
-      <FlatList
-  data={ranks}
-  keyExtractor={(item) => item.rank_id.toString()} // Konwertujemy ID na string
-  renderItem={({ item }) => (
-    <View style={styles.rankItem}>
-      <Text style={styles.rankName}>{item.rank_name}</Text>
-      <Text style={styles.rankDate}>
-        Zdobyto: {new Intl.DateTimeFormat('pl-PL').format(new Date(item.date))}
-      </Text>
-    </View>
-  )}
-/>
+      {ranks.length === 0 ? (
+        <>
+          <Text>Brak stopni dla danej harcerki</Text>
+        </>
+      ) : (
+        <>
+        <FlatList
+          data={ranks}
+          keyExtractor={(item) => item.rank_id.toString()}
+          renderItem={renderItem}
+        />
+          {/* <FlatList
+            data={ranks}
+            keyExtractor={item => item.rank_id.toString()}
+            renderItem={({item}) => (
+              <View style={styles.rankItem}>
+                <Text style={styles.rankName}>{item.rank_name}</Text>
+                <Text style={styles.rankDate}>
+                  Zdobyto:{' '}
+                  {new Intl.DateTimeFormat('pl-PL').format(new Date(item.date))}
+                </Text>
+              </View>
+            )}
+          /> */}
+        </>
+      )}
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => navigation.navigate('AddRankScreen', {id: id})}>
+        <Text style={styles.buttonText}>Dodaj stopień</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={() => navigation.goBack()}>
+        <Text style={styles.buttonText}>Wróć</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -94,6 +178,32 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    height: 80,
+  },
+  deleteButton: {
+    backgroundColor: Colors.red,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+    height: '89%',
+    width: 80,
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  closeButton: {
+    backgroundColor: Colors.red,
+    padding: ButtonProps.padding,
+    borderRadius: ButtonProps.borderRadius,
+    marginTop: ButtonProps.marginTop,
+  },
+  addButton: {
+    backgroundColor: Colors.secondary,
+    padding: ButtonProps.padding,
+    borderRadius: ButtonProps.borderRadius,
+    marginTop: ButtonProps.marginTop,
   },
   rankName: {
     fontSize: 16,
@@ -108,6 +218,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  buttonText: {
+    color: Colors.white,
+    fontSize: FontSizes.button,
+    textAlign: 'center',
   },
 });
 

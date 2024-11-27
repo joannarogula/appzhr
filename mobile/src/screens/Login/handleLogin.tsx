@@ -1,7 +1,5 @@
 import { Alert } from 'react-native';
 import config from '../../config';
-import { useContext } from 'react';
-import { UserContext } from '../../context/UserContext';
 import { saveTeamAndUserIds }  from '../../asyncStorage.tsx'
 
 
@@ -13,7 +11,6 @@ const handleLogin = async (email: string, password: string) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ login: email, password: password }),
-        
       });
   
       const data = await response.json();
@@ -26,15 +23,14 @@ const handleLogin = async (email: string, password: string) => {
         await saveTeamAndUserIds(teamId, userId);
         // setUserId(userId);
         
-        // Alert.alert('Sukces', `Zalogowano jako: ${email}`);
-        Alert.alert('Sukces', `User: ${userId}`);
+        Alert.alert('Sukces', `Zalogowano jako: ${email}`);
         return true;
       } else {
         Alert.alert('Błąd', data.message || 'Logowanie nie powiodło się.');
         return false;
       }
     } catch (error) {
-      Alert.alert('Błąd', 'Wystąpił problem z połączeniem.');
+      Alert.alert('Błąd', String(error));
       return false;
     }
   };

@@ -13,7 +13,7 @@ import {getTeamId} from '../../asyncStorage';
 import { Picker } from '@react-native-picker/picker';
 import {getPatrols} from '../../api/api';
 
-const AddScout: React.FC = ({navigation}: any) => {
+const AddScoutScreen: React.FC = ({navigation}: any) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -192,4 +192,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddScout;
+export default AddScoutScreen;
