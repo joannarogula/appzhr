@@ -1,30 +1,42 @@
 import React, { useContext } from 'react';
-import { View, Text, TextInput, Button, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, Alert, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Colors, FontSizes, Spacing } from '../../theme';
+import handleLogin from './handleLogin';
 // import { UserContext } from '../../context/UserContext';
 
- function LoginScreen(props: {
-  onLogin: (email: string, password: string) => void;
-  navigation: any;
-}) {
+//  function LoginScreen(props: {
+//   navigation: any;
+// }) {
+  const LoginScreen = ({navigation}: {navigation: any}) => {
 
-  const { onLogin, navigation } = props;
+  // const { navigation } = props;
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   
  
 
-  const handleLogin = () => {
+  const checkLoginData = async () => {
     if (!email || !password) {
       Alert.alert('Błąd', 'Proszę wypełnić wszystkie pola.');
       return;
     }
+    else {
+     
+        const success = await handleLogin(email, password);
+        if (success) {
+          // props.navigation.navigate('Drawer');
+          navigation.navigate('Drawer');
+        }
+    }
 
-    props.onLogin(email, password);
   };
 
   return (
     <View style={styles.container}>
+      <Image
+        source={require('../../assets/logo.png')} // Możesz użyć URL obrazu, np. z backendu
+        style={styles.profileImage} // Styl dla zdjęcia
+      />
       <Text style={styles.title}>Zaloguj się</Text>
 
        <TextInput
@@ -42,7 +54,7 @@ import { Colors, FontSizes, Spacing } from '../../theme';
         onChangeText={setPassword}
         secureTextEntry
       />
-      <TouchableOpacity style={styles.addButton} onPress={handleLogin}>
+      <TouchableOpacity style={styles.addButton} onPress={checkLoginData}>
         <Text style={styles.addButtonText}>Zaloguj</Text>
       </TouchableOpacity>
       
@@ -97,6 +109,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     textAlign: 'center',
+  },
+  profileImage: {
+    width: 100,
+    height: 100, 
+    marginBottom: 20,
   },
 });
 

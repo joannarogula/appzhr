@@ -14,19 +14,16 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 const AddPatrolScreen: React.FC = ({ navigation }: any) => {
   const [name, setName] = useState('');
-  const [creationDate, setCreationDate] = useState<Date>(new Date());
-  const [showPicker, setShowPicker] = useState(false);
 
   const handleAddPatrol = async () => {
     try {
       const teamId = await getTeamId(); // Pobieramy id drużyny
       if (!teamId) throw new Error('Brak drużyny');
-      const newDate = (creationDate).toISOString().split('T')[0];
 
       const response = await fetch(`${config.API_URL}/patrols`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, teamId: parseInt(teamId, 10), newDate}),
+        body: JSON.stringify({ name, teamId: parseInt(teamId, 10)}),
       });
 
       if (response.ok) {
@@ -40,14 +37,6 @@ const AddPatrolScreen: React.FC = ({ navigation }: any) => {
     }
   };
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowPicker(false); // Ukryj picker po wyborze daty
-    if (selectedDate) {
-      // const newDate = new Date(selectedDate.toISOString().split('T')[0]);
-      setCreationDate(selectedDate);
-      // console.log(creationDate);
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -59,21 +48,6 @@ const AddPatrolScreen: React.FC = ({ navigation }: any) => {
         onChangeText={setName}
       />
 
-<TouchableOpacity
-        style={styles.dateButton}
-        onPress={() => setShowPicker(true)}>
-        <Text style={styles.dateButtonText}>
-          Wybierz datę: {creationDate.toISOString().split('T')[0]}
-        </Text>
-      </TouchableOpacity>
-
-      {showPicker && (
-        <DateTimePicker
-          value={creationDate}
-          mode="date"
-          onChange={handleDateChange}
-        />
-      )}
       <TouchableOpacity style={styles.addButton} onPress={handleAddPatrol}>
         <Text style={styles.addButtonText}>Dodaj</Text>
       </TouchableOpacity>
@@ -119,17 +93,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     textAlign: 'center',
-  },
-  dateButton: {
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: Colors.primary,
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  dateButtonText: {
-    color: '#fff',
-    fontSize: 16,
   },
 });
 

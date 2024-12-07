@@ -1,6 +1,6 @@
 import 'react-native-reanimated';
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { getUserId } from '../asyncStorage';
 import config from '../config';
@@ -85,11 +85,29 @@ const ProfileScreen = ({navigation}: {navigation: any}) =>
 
   return (
     <View style={styles.container}>
-      <Icon name="user" size={100} color={Colors.primary} />
+      <Image
+        source={require('../assets/user.png')} 
+        style={styles.profileImage} 
+      />
       <Text style={styles.title}>Profil użytkownika</Text>
-      <Text style={styles.info}>E-mail: {userData.email}</Text>
-      <Text style={styles.info}>Nazwa drużyny: {userData.team_name}</Text>
-      <Text style={styles.info}>Rola: {userData.role}</Text>
+<Text style={styles.info}>
+  <Text style={styles.label}>E-mail: </Text>
+  {userData.email}
+</Text>
+<Text style={styles.info}>
+  <Text style={styles.label}>Nazwa drużyny: </Text>
+  {userData.team_name}
+</Text>
+<Text style={styles.info}>
+  <Text style={styles.label}>Rola: </Text>
+  {userData.role}
+</Text>
+
+
+      <TouchableOpacity style={styles.changePasswordButton} onPress={() => {
+    navigation.navigate('ChangePasswordScreen'); }}>
+        <Text style={styles.addButtonText}>Zmień hasło</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.backButton}
@@ -97,6 +115,7 @@ const ProfileScreen = ({navigation}: {navigation: any}) =>
             onPress={logout}>
         <Text style={styles.addButtonText}>Wyloguj się</Text>
       </TouchableOpacity>
+
     </View>
   );
 }
@@ -113,7 +132,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginVertical: 16,
-    color: '#343a40',
+    color: Colors.primary,
   },
   info: {
     fontSize: 18,
@@ -125,6 +144,7 @@ const styles = StyleSheet.create({
     padding: Spacing.small,
     borderRadius: 8,
     marginTop: 12,
+    width: 120,
   },
   loadingText: {
     fontSize: 16,
@@ -139,6 +159,22 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     color: 'red',
+  },
+  profileImage: {
+    width: 150,
+    height: 150, 
+    marginBottom: 20,
+  },
+  changePasswordButton: {
+    backgroundColor: Colors.secondary, // Dodatkowy styl dla przycisku "Zmień hasło"
+    padding: Spacing.small,
+    borderRadius: 8,
+    marginTop: 12,
+    width: 120,
+  },
+  label: {
+    fontWeight: 'bold', // Pogrubiony tekst
+    color: '#000', // Możesz zmienić kolor, jeśli chcesz
   },
 });
 

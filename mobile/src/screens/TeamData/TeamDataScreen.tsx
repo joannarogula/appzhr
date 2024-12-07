@@ -6,19 +6,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
-  Button,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import {ButtonProps, Colors, FontSizes, Spacing} from '../../theme';
-import config from '../../config';
 import {getTeamId} from '../../asyncStorage';
 import {
-  NavigationProp,
   useFocusEffect,
-  useNavigation,
 } from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
 import {getPatrols, getScouts} from '../../api/api';
 
 const TeamDataScreen = ({navigation}: {navigation: any}) => {
@@ -34,50 +28,23 @@ const TeamDataScreen = ({navigation}: {navigation: any}) => {
   } | null>(null);
   //
 
-  const [scouts, setScouts] = useState<any[]>([]); // Stan do przechowywania danych
+  const [scouts, setScouts] = useState<any[]>([]); 
   const [patrols, setPatrols] = useState<any[]>([]);
 
-  // const [drużynaId, setDrużynaId] = useState<string | null>(null);
 
   const [loading, setLoading] = useState<boolean>(true);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       // Najpierw pobieramy drużynaId
-  //       const id = await getTeamId(); // Oczekiwanie na wynik funkcji asynchronicznej
-  //       // Ustawiamy drużynaId w stanie
-
-  //       if (id !== null) {
-  //         // setDrużynaId(id);
-  //         // Jeśli drużynaId jest poprawne, pobieramy harcerki
-  //         await getScouts(setScouts, parseInt(id, 10));
-  //         await getPatrols(setPatrols, parseInt(id, 10));
-  //       }
-  //     } catch (error) {
-  //       console.error('Błąd przy ładowaniu teamId lub harcerek', error);
-  //     } finally {
-  //       setLoading(false); // Kończymy ładowanie
-  //     }
-  //   };
-
-  //   fetchData(); // Wywołanie funkcji wewnątrz useEffect
-  // }, []);
 
   const fetchData = async () => {
     try {
-      // Najpierw pobieramy drużynaId
-      const id = await getTeamId(); // Oczekiwanie na wynik funkcji asynchronicznej
-      // Ustawiamy drużynaId w stanie
+      const id = await getTeamId(); 
 
       if (id !== null) {
-        // setDrużynaId(id);
-        // Jeśli drużynaId jest poprawne, pobieramy harcerki
         await getScouts(setScouts, parseInt(id, 10));
         await getPatrols(setPatrols, parseInt(id, 10));
       }
     } catch (error) {
-      console.error('Błąd przy ładowaniu teamId lub harcerek', error);
+      console.error('Błąd przy ładowaniu teamId lub harcerzy', error);
     } finally {
       setLoading(false); // Kończymy ładowanie
     }
@@ -94,7 +61,7 @@ const TeamDataScreen = ({navigation}: {navigation: any}) => {
     scouts: scouts
       .filter(scout => scout.patrolId === patrol.id)
       .map(scout => ({
-        ...scout, // Kopiujemy wszystkie pola skauta
+        ...scout, 
         birthDate: new Date(scout.birthDate).toISOString().split('T')[0], // Konwersja daty
         joinDate: new Date(scout.joinDate).toISOString().split('T')[0], // Konwersja daty
       })),
@@ -125,7 +92,7 @@ const TeamDataScreen = ({navigation}: {navigation: any}) => {
               style={styles.groupButton}>
               <Text style={styles.groupText}>{item.name}</Text>
             </TouchableOpacity>
-            {/* Wyświetlanie harcerek w rozwiniętym zastępie */}
+            {/* Wyświetlanie harcerzy w rozwiniętym zastępie */}
             {expandedGroup === item.id && (
               <View style={styles.scoutsList}>
                 {item.scouts.map((scout, id) => (
@@ -153,14 +120,13 @@ const TeamDataScreen = ({navigation}: {navigation: any}) => {
           visible={!!selectedScout}>
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Dane harcerki</Text>
+              <Text style={styles.modalTitle}>Dane osoby</Text>
               <Text>Imię: {selectedScout.firstName}</Text>
               <Text>Nazwisko: {selectedScout.lastName}</Text>
               <Text>Email: {selectedScout.email}</Text>
               <Text>Nr telefonu: {selectedScout.telephone}</Text>
               <Text>Data urodzenia: {selectedScout.birthDate}</Text>
               <Text>Data przyjęcia: {selectedScout.joinDate}</Text>
-              {/* Nowy przycisk "Stopnie" */}
               <TouchableOpacity
                 onPress={() => {
                   setSelectedScout(null); // Zamknięcie modalu
@@ -168,6 +134,15 @@ const TeamDataScreen = ({navigation}: {navigation: any}) => {
                 }}
                 style={styles.addButton}>
                 <Text style={styles.buttonText}>STOPNIE</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedScout(null); // Zamknięcie modalu
+                  navigation.navigate('Badges', {id: selectedScout.id}); // Przekierowanie do ekranu stopni
+                }}
+                style={styles.addButton}>
+                <Text style={styles.buttonText}>SPRAWNOŚCI</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -189,7 +164,7 @@ const TeamDataScreen = ({navigation}: {navigation: any}) => {
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => navigation.navigate('AddScout')}>
-          <Text style={styles.buttonText}>DODAJ HARCERKĘ</Text>
+          <Text style={styles.buttonText}>DODAJ OSOBĘ</Text>
         </TouchableOpacity>
       </View>
     </View>

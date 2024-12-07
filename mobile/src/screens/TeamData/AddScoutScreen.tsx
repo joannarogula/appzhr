@@ -71,10 +71,10 @@ const AddScoutScreen: React.FC = ({navigation}: any) => {
       );
 
       if (response.ok) {
-        Alert.alert('Sukces', 'Dodano harcerkę');
+        Alert.alert('Sukces', 'Dodano nową osobę');
         navigation.goBack();
       } else {
-        throw new Error('Nie udało się dodać harcerki');
+        throw new Error('Nie udało się dodać osoby');
       }
     } catch (error) {
       Alert.alert('Błąd', 'Proszę wypełnić wszystkie pola.');
@@ -83,7 +83,7 @@ const AddScoutScreen: React.FC = ({navigation}: any) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Dodaj nową harcerkę</Text>
+      <Text style={styles.title}>Dodaj nową osobę</Text>
       <TextInput
         style={styles.input}
         placeholder="Imię"

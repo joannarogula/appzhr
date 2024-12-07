@@ -3,17 +3,17 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   Alert,
   StyleSheet,
   TouchableOpacity,
+  Image,
 } from 'react-native';
-import bcrypt from 'bcryptjs'; // Importowanie bcryptjs
 import config from '../../config'; // Importowanie konfiguracji z adresem API
 import {useNavigation} from '@react-navigation/native';
 import {Colors, FontSizes, Spacing} from '../../theme';
 
 function RegisterScreen() {
+  const [teamName, setTeamName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -33,8 +33,7 @@ function RegisterScreen() {
     }
 
     try {
-      // Haszowanie hasła przed wysłaniem do serwera
-      // const hashedPassword = await bcrypt.hash(password, 10);
+ 
 
       // Wysyłanie zapytania do API z danymi użytkownika
       const response = await fetch(`${config.API_URL}/register`, {
@@ -43,6 +42,7 @@ function RegisterScreen() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          teamName,
           email,
           password,
         }),
@@ -60,7 +60,19 @@ function RegisterScreen() {
 
   return (
     <View style={styles.container}>
+       <Image
+        source={require('../../assets/team.png')} // Możesz użyć URL obrazu, np. z backendu
+        style={styles.profileImage} // Styl dla zdjęcia
+      />
       <Text style={styles.title}>Rejestracja</Text>
+      <Text style={styles.middle}>Utwórz nową drużynę i swoje konto do zarządzania</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Nazwa drużyny"
+        value={teamName}
+        onChangeText={setTeamName}
+      />
 
       <TextInput
         style={styles.input}
@@ -116,6 +128,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: Colors.primary,
   },
+  middle: {
+    fontSize: FontSizes.medium,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: Colors.secondary,
+    textAlign: 'center'
+  },
   input: {
     width: '100%',
     height: 50,
@@ -145,6 +164,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     textAlign: 'center',
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
   },
 });
 

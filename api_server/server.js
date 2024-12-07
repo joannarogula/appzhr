@@ -106,54 +106,61 @@ app.post("/api/login", (req, res) => {
   });
 });
 
-// Rejestracja
 app.post("/api/register", async (req, res) => {
-  const { email, password } = req.body;
+  const { teamName, email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).send("Email i hasło są wymagane.");
+  if (!teamName || !email || !password) {
+    return res.status(400).send("Team name, email i hasło są wymagane.");
   }
-
-  console.log(email);
-  console.log(password);
 
   try {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    console.log(hashedPassword);
-    const values = [1, email, hashedPassword, "admin"];
 
-    // const sql2 = 'INSERT INTO `zhrapp`.`użytkownicy` (`id_drużyny`, `email`, `hasło`, `rola`) VALUES (`1`, ?, ?, `admin`);'
-    const sql =
-      "INSERT INTO users (`teamId`, `email`, `password`, `role`) VALUES (?, ?, ?, ?)";
-    db.query(sql, values, (err, result) => {
-      if (err) {
-        console.log("error");
-        return res.status(500).send("Błąd serwera.");
+    // Dodanie drużyny
+    const teamSql = "INSERT INTO teams (`name`) VALUES (?)";
+    db.query(teamSql, [teamName], (teamErr, teamResult) => {
+      if (teamErr) {
+        console.error(teamErr);
+        return res.status(500).send("Błąd podczas tworzenia drużyny.");
       }
-      res.status(201).send("Rejestracja zakończona sukcesem.");
-      console.log("sukces");
+
+      // Pobranie ID nowo utworzonej drużyny
+      console.log(teamResult);
+      const teamId = teamResult.insertId;
+
+      // Dodanie użytkownika
+      const userSql =
+        "INSERT INTO users (`teamId`, `email`, `password`, `role`) VALUES (?, ?, ?, ?)";
+      const userValues = [teamId, email, hashedPassword, "admin"];
+      db.query(userSql, userValues, (userErr, userResult) => {
+        if (userErr) {
+          console.error(userErr);
+          return res.status(500).send("Błąd podczas rejestracji użytkownika.");
+        }
+
+        res.status(201).send("Rejestracja zakończona sukcesem.");
+      });
     });
   } catch (err) {
+    console.error(err);
     res.status(500).send("Błąd podczas rejestracji.");
-    console.log("błąd");
   }
 });
 
 // Endpoint do dodawania nowego zastępu
 app.post("/api/patrols", async (req, res) => {
-  const { name, teamId, newDate } = req.body;
+  const { name, teamId } = req.body;
 
   // Walidacja wejścia
-  if (!name || !teamId || !newDate) {
+  if (!name || !teamId) {
     return res.status(400).send("Nazwa i ID drużyny są wymagane.");
   }
 
-  const values = [name, teamId, newDate];
+  const values = [name, teamId];
 
   try {
-    const sql =
-      "INSERT INTO patrols (`name`, `teamId`, `date`) VALUES (?, ?, ?)";
+    const sql = "INSERT INTO patrols (`name`, `teamId`) VALUES (?, ?)";
     db.query(sql, values, (err, result) => {
       if (err) {
         console.error("Błąd podczas dodawania zastępu:", err);
@@ -240,14 +247,14 @@ app.get("/api/scouts/:scoutId/ranks", (req, res) => {
 
   const sql = `
     SELECT 
-    ranksScouts.id AS rankScoutId,
+    scoutsRanks.id AS rankScoutId,
       ranks.id AS rank_id,
       ranks.name AS rank_name,
-      ranksScouts.date
-    FROM ranksScouts
-    JOIN ranks ON ranksScouts.rankId = ranks.id
-    WHERE ranksScouts.scoutId = ?
-    ORDER BY ranksScouts.date ASC
+      scoutsRanks.date
+    FROM scoutsRanks
+    JOIN ranks ON scoutsRanks.rankId = ranks.id
+    WHERE scoutsRanks.scoutId = ?
+    ORDER BY scoutsRanks.date ASC
   `;
 
   db.query(sql, [scoutId], (err, results) => {
@@ -273,7 +280,7 @@ app.post("/api/ranks", async (req, res) => {
 
   try {
     const sql =
-      "INSERT INTO ranksScouts (`rankId`, `scoutId`, `date`) VALUES (?, ?, ?)";
+      "INSERT INTO scoutsRanks (`rankId`, `scoutId`, `date`) VALUES (?, ?, ?)";
     db.query(sql, values, (err, result) => {
       if (err) {
         console.error("Błąd podczas dodawania zastępu:", err);
@@ -296,18 +303,15 @@ app.get("/api/ranks", (req, res) => {
 
   db.query(sql, (err, results) => {
     if (err) {
-      // console.log(results);
       res.status(500).send("Błąd serwera");
       return;
     }
-    // console.log(results);
     res.json(results); // Zwracamy wyniki zapytania
   });
 });
 
 app.delete("/api/ranks/:rankScoutId", async (req, res) => {
   const { rankScoutId } = req.params;
-  console.log("wywołano", rankScoutId);
 
   // Walidacja wejścia
   if (!rankScoutId) {
@@ -315,7 +319,7 @@ app.delete("/api/ranks/:rankScoutId", async (req, res) => {
   }
 
   try {
-    const sql = "DELETE FROM ranksScouts WHERE id = ?";
+    const sql = "DELETE FROM scoutsRanks WHERE id = ?";
 
     db.query(sql, rankScoutId, (err, result) => {
       if (err) {
@@ -327,12 +331,186 @@ app.delete("/api/ranks/:rankScoutId", async (req, res) => {
         return res.status(404).send("Nie znaleziono stopnia do usunięcia.");
       }
 
-      console.log(`Usunięto stopień o Id ${rankScoutId}`);
       res.status(200).send("Stopień został usunięty.");
     });
   } catch (error) {
     console.error("Błąd serwera:", error);
     res.status(500).send("Błąd serwera.");
+  }
+});
+
+app.get("/api/scouts/number/:teamId", (req, res) => {
+  const { teamId } = req.params; // Pobieramy ID drużyny z parametrów URL
+
+  const sql = `SELECT 
+    COUNT(scouts.id) AS numberOfScouts,          
+    COUNT(DISTINCT patrols.id) AS numberOfPatrols, 
+    COUNT(scoutsBadges.id) AS numberOfBadges      
+    FROM patrols
+    LEFT JOIN scouts ON scouts.patrolId = patrols.id
+    LEFT JOIN scoutsBadges ON scouts.id = scoutsBadges.scoutId 
+    WHERE patrols.teamId = ?;`;
+
+  db.query(sql, [teamId], (err, results) => {
+    if (err) {
+      res.status(500).send("Błąd serwera");
+      return;
+    }
+    res.json(results); // Zwracamy wyniki zapytania
+  });
+});
+
+app.get("/api/scouts/:scoutId/badges", (req, res) => {
+  const { scoutId } = req.params; // Pobieramy ID harcerki z parametrów URL
+
+  const sql = `
+    SELECT 
+    scoutsBadges.id AS badgeScoutId,
+      badges.id AS badge_id,
+      badges.name AS badge_name,
+      scoutsBadges.date
+    FROM scoutsBadges
+    JOIN badges ON scoutsBadges.badgeId = badges.id
+    WHERE scoutsBadges.scoutId = ?
+    ORDER BY scoutsBadges.date ASC
+  `;
+
+  db.query(sql, [scoutId], (err, results) => {
+    if (err) {
+      console.error("Błąd zapytania do bazy danych:", err);
+      res.status(500).send("Błąd serwera");
+      return;
+    }
+    res.json(results); // Zwracamy wyniki jako JSON
+  });
+});
+
+app.post("/api/badges", async (req, res) => {
+  const { badgeId, scoutId, newDate } = req.body;
+
+  // Walidacja wejścia
+  if (!badgeId || !scoutId || !newDate) {
+    return res.status(400).send("Nazwa i ID drużyny są wymagane.");
+  }
+
+  const values = [badgeId, scoutId, newDate];
+
+  try {
+    const sql =
+      "INSERT INTO scoutsBadges (`badgeId`, `scoutId`, `date`) VALUES (?, ?, ?)";
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error("Błąd podczas dodawania zastępu:", err);
+        return res.status(500).send("Błąd serwera.");
+      }
+      res.status(201).send("Zastęp został dodany.");
+    });
+  } catch (error) {
+    console.error("Błąd serwera:", error);
+    res.status(500).send("Błąd serwera.");
+  }
+});
+
+app.get("/api/badges", (req, res) => {
+  const sql = `
+      SELECT *
+      FROM badges
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      // console.log(results);
+      res.status(500).send("Błąd serwera");
+      return;
+    }
+    // console.log(results);
+    res.json(results); // Zwracamy wyniki zapytania
+  });
+});
+
+app.delete("/api/badges/:badgeScoutId", async (req, res) => {
+  const { badgeScoutId } = req.params;
+  console.log("wywołano", badgeScoutId);
+
+  // Walidacja wejścia
+  if (!badgeScoutId) {
+    return res.status(400).send("ID jest wymagane");
+  }
+
+  try {
+    const sql = "DELETE FROM scoutsBadges WHERE id = ?";
+
+    db.query(sql, badgeScoutId, (err, result) => {
+      if (err) {
+        console.error("Błąd podczas usuwania stopnia:", err);
+        return res.status(500).send("Błąd serwera.");
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).send("Nie znaleziono stopnia do usunięcia.");
+      }
+
+      console.log(`Usunięto stopień o Id ${badgeScoutId}`);
+      res.status(200).send("Stopień został usunięty.");
+    });
+  } catch (error) {
+    console.error("Błąd serwera:", error);
+    res.status(500).send("Błąd serwera.");
+  }
+});
+
+app.post("/api/change-password", async (req, res) => {
+  const { userId, currentPassword, newPassword } = req.body;
+  console.log(userId, currentPassword, newPassword);
+
+  if (!userId || !currentPassword || !newPassword) {
+    return res
+      .status(400)
+      .send("Email, obecne hasło i nowe hasło są wymagane.");
+  }
+
+  try {
+    // Pobranie użytkownika na podstawie email
+    const userSql = "SELECT * FROM users WHERE id = ?";
+    db.query(userSql, [userId], async (userErr, userResult) => {
+      if (userErr) {
+        console.error(userErr);
+        return res.status(500).send("Błąd podczas wyszukiwania użytkownika.");
+      }
+
+      if (userResult.length === 0) {
+        return res.status(404).send("Użytkownik nie istnieje.");
+      }
+
+      const user = userResult[0];
+
+      // Sprawdzanie poprawności obecnego hasła
+      const isPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.password
+      );
+      if (!isPasswordValid) {
+        return res.status(401).send("Niepoprawne obecne hasło.");
+      }
+
+      // Haszowanie nowego hasła
+      const saltRounds = 10;
+      const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+      // Aktualizacja hasła w bazie danych
+      const updateSql = "UPDATE users SET password = ? WHERE id = ?";
+      db.query(updateSql, [hashedNewPassword, userId], (updateErr) => {
+        if (updateErr) {
+          console.error(updateErr);
+          return res.status(500).send("Błąd podczas aktualizacji hasła.");
+        }
+
+        res.status(200).send("Hasło zostało zmienione.");
+      });
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Błąd podczas zmiany hasła.");
   }
 });
 

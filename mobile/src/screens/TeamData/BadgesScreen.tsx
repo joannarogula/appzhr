@@ -8,95 +8,94 @@ import { GestureHandlerRootView, RectButton, Swipeable } from 'react-native-gest
 import {StackNavigationProp} from '@react-navigation/stack';
 import Animated from 'react-native-reanimated';
 
-type RanksScreenRouteProp = RouteProp<ParamListBase, 'Ranks'>;
-type RanksScreenNavigationProp = StackNavigationProp<ParamListBase, 'Ranks'>;
+type BadgesScreenRouteProp = RouteProp<ParamListBase, 'Badges'>;
+type BadgesScreenNavigationProp = StackNavigationProp<ParamListBase, 'Badges'>;
 
-type RanksScreenProps = {
-  route: RanksScreenRouteProp;
-  navigation: RanksScreenNavigationProp; // Dodajemy navigation
+type BadgesScreenProps = {
+  route: BadgesScreenRouteProp;
+  navigation: BadgesScreenNavigationProp; // Dodajemy navigation
 };
 
-// Typ dla pojedynczego stopnia
-type Rank = {
-  rankScoutId: string;
-  rank_id: string;
-  rank_name: string;
+
+type Badge = {
+  badgeScoutId: string;
+  badge_id: string;
+  badge_name: string;
   date: string; // Data w formacie ISO
 };
 
-const RanksScreen: React.FC<RanksScreenProps> = ({route, navigation}) => {
+const BadgesScreen: React.FC<BadgesScreenProps> = ({route, navigation}) => {
   const {id} = route.params as {id: string};
-  const [ranks, setRanks] = useState<Rank[]>([]);
+  const [badges, setBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     // Funkcja pobierająca dane z API
-    const fetchRanks = async () => {
+    const fetchBadges = async () => {
       try {
-        const response = await fetch(`${config.API_URL}/scouts/${id}/ranks`);
-        // const data: Rank[] = await response.json();
+        const response = await fetch(`${config.API_URL}/scouts/${id}/badges`);
+        
         const text = await response.text(); // Pobieramy odpowiedź jako tekst
-        // console.log(text);
 
         if (!text) {
           console.log('Brak danych w odpowiedzi serwera.');
-          setRanks([]); // Ustaw pustą listę, jeśli brak danych
+          setBadges([]); // Ustaw pustą listę, jeśli brak danych
           return;
         }
 
-        const data: Rank[] = JSON.parse(text); // Parsujemy odpowiedź tylko jeśli istnieje
+        const data: Badge[] = JSON.parse(text); // Parsujemy odpowiedź tylko jeśli istnieje
 
         const processedData = data.map(item => ({
           ...item,
           date: item.date.split('T')[0], // Usunięcie czasu, pozostaje tylko część daty
         }));
 
-        setRanks(processedData);
+        setBadges(processedData);
       } catch (error) {
-        console.error('Błąd podczas pobierania stopni:', error);
+        console.error('Błąd podczas pobierania sprawności:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRanks();
-  }, [ranks]);
+    fetchBadges();
+  }, [badges]);
 
-   const removeItem = async (rankScoutId: string) => {
+   const removeItem = async (badgeScoutId: string) => {
     try {
       // Wywołanie DELETE na API
-      const response = await fetch(`${config.API_URL}/ranks/${rankScoutId}`, {
+      const response = await fetch(`${config.API_URL}/badges/${badgeScoutId}`, {
         method: 'DELETE',
       });
   
       if (!response.ok) {
-        console.error('Nie udało się usunąć stopnia. Kod odpowiedzi:', response.status);
+        console.error('Nie udało się usunąć sprawności. Kod odpowiedzi:', response.status);
         return;
       }
   
       // Aktualizujemy stan lokalny po pomyślnym usunięciu
-      setRanks((prevRanks) => prevRanks.filter((item) => item.rankScoutId !== rankScoutId));
+      setBadges((prevBadges) => prevBadges.filter((item) => item.badgeScoutId !== badgeScoutId));
     } catch (error) {
-      console.error('Błąd podczas usuwania stopnia:', error);
+      console.error('Błąd podczas usuwania sprawności:', error);
     }
   };
   
-  const renderRightActions = (rankScoutId: string) => (
+  const renderRightActions = (badgeScoutId: string) => (
     <TouchableOpacity
       style={styles.deleteButton}
-      onPress={() => removeItem(rankScoutId)}
+      onPress={() => removeItem(badgeScoutId)}
     >
       <Text style={styles.deleteButtonText}>Usuń</Text>
     </TouchableOpacity>
   );
 
-  const renderItem = ({ item }: { item: Rank }) => (
+  const renderItem = ({ item }: { item: Badge }) => (
     <Swipeable
-      renderRightActions={() => renderRightActions(item.rankScoutId)}
+      renderRightActions={() => renderRightActions(item.badgeScoutId)}
     >
-      <View style={styles.rankItem}>
-        <Text style={styles.rankName}>{item.rank_name}</Text>
-        <Text style={styles.rankDate}>
+      <View style={styles.badgeItem}>
+        <Text style={styles.badgeName}>{item.badge_name}</Text>
+        <Text style={styles.badgeDate}>
           Zdobyto: {new Intl.DateTimeFormat('pl-PL').format(new Date(item.date))}
         </Text>
       </View>
@@ -109,44 +108,31 @@ const RanksScreen: React.FC<RanksScreenProps> = ({route, navigation}) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Ładowanie stopni...</Text>
+        <Text>Ładowanie sprawności...</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Stopnie osoby</Text>
-      {ranks.length === 0 ? (
+      <Text style={styles.title}>Sprawności osoby</Text>
+      {badges.length === 0 ? (
         <>
-          <Text>Brak stopni dla danej osoby</Text>
+          <Text>Brak sprawności dla danej osoby</Text>
         </>
       ) : (
         <>
         <FlatList
-          data={ranks}
-          keyExtractor={(item) => item.rank_id.toString()}
+          data={badges}
+          keyExtractor={(item) => item.badge_id.toString()}
           renderItem={renderItem}
         />
-          {/* <FlatList
-            data={ranks}
-            keyExtractor={item => item.rank_id.toString()}
-            renderItem={({item}) => (
-              <View style={styles.rankItem}>
-                <Text style={styles.rankName}>{item.rank_name}</Text>
-                <Text style={styles.rankDate}>
-                  Zdobyto:{' '}
-                  {new Intl.DateTimeFormat('pl-PL').format(new Date(item.date))}
-                </Text>
-              </View>
-            )}
-          /> */}
         </>
       )}
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('AddRankScreen', {id: id})}>
-        <Text style={styles.buttonText}>Dodaj stopień</Text>
+        onPress={() => navigation.navigate('AddBadgeScreen', {id: id})}>
+        <Text style={styles.buttonText}>Dodaj sprawność</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.closeButton}
@@ -169,7 +155,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: Colors.primary,
   },
-  rankItem: {
+  badgeItem: {
     padding: 12,
     backgroundColor: '#ffffff',
     borderRadius: 8,
@@ -205,11 +191,11 @@ const styles = StyleSheet.create({
     borderRadius: ButtonProps.borderRadius,
     marginTop: ButtonProps.marginTop,
   },
-  rankName: {
+  badgeName: {
     fontSize: 16,
     fontWeight: 'bold',
   },
-  rankDate: {
+  badgeDate: {
     fontSize: 14,
     color: '#6c757d',
     marginTop: 4,
@@ -226,4 +212,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RanksScreen;
+export default BadgesScreen;

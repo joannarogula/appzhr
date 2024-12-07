@@ -27,13 +27,7 @@ type SectionProps = PropsWithChildren<{
   title: string;
 }>;
 
-// function getHarcerki(setData: React.Dispatch<React.SetStateAction<never[]>>) {
-//   useEffect(()=> {
-//     fetch('localhost:3000/api/harcerki')
-//     .then(res => res.json())
-//     .then(data => setData(data))
-//   }, [])
-// }
+
 
 const getHarcerki = async (
   setData: React.Dispatch<React.SetStateAction<any[]>>,

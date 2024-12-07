@@ -1,50 +1,28 @@
 import 'react-native-reanimated';
-import React, {useContext} from 'react';
+import React from 'react';
 import {
   NavigationContainer,
-  useNavigation,
   DrawerActions,
 } from '@react-navigation/native';
-import {Alert} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import LoginScreen from '../screens/Login/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
-import handleLogin from '../screens/Login/handleLogin';
 import RegisterScreen from '../screens/Register/RegisterScreen';
 import TeamDataScreen from '../screens/TeamData/TeamDataScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import Icon from 'react-native-vector-icons/Entypo';
-import {Colors, FontSizes, Spacing} from '../theme';
-import {UserContext, UserProvider} from '../context/UserContext';
+import {Colors} from '../theme';
 import AddPatrolScreen from '../screens/TeamData/AddPatrolScreen';
 import AddScoutScreen from '../screens/TeamData/AddScoutScreen';
 import RanksScreen from '../screens/TeamData/RanksScreen';
 import AddRankScreen from '../screens/TeamData/AddRankScreen';
+import BadgesScreen from '../screens/TeamData/BadgesScreen';
+import AddBadgeScreen from '../screens/TeamData/AddBadgeScreen';
+import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
-
-// const AddStackNav = () => {
-//   return (
-//     <Stack.Navigator initialRouteName="Dane" screenOptions={({navigation}) => ({
-//       headerShown: false,
-//       headerLeft: () => (
-//         <Icon
-//           name="menu"
-//           onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-//           size={30}
-//           color={Colors.secondary}
-//         />
-//       ),
-//       drawerActiveTintColor: Colors.secondary,
-//     })}>
-//       <Stack.Screen name="Dane" component={TeamDataScreen}  />
-//       <Stack.Screen name="AddPatrol" component={AddPatrol} />
-//        <Stack.Screen name="AddHarcerka" component={AddScout} />
-//       </Stack.Navigator>
-//   );
-// };
 
 const DrawerNav = () => {
   return (
@@ -78,7 +56,7 @@ function AppNavigator() {
           ),
           drawerActiveTintColor: Colors.secondary,
         })}>
-        <Stack.Screen name="Logowanie">
+        {/* <Stack.Screen name="Logowanie">
           {props => (
             <LoginScreen
               {...props}
@@ -90,7 +68,10 @@ function AppNavigator() {
               }}
             />
           )}
-        </Stack.Screen>
+        </Stack.Screen> */}
+        <Stack.Screen name="Logowanie" component={LoginScreen} />
+        <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
+
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen
           name="Drawer"
@@ -101,6 +82,9 @@ function AppNavigator() {
         <Stack.Screen name="AddScout" component={AddScoutScreen} />
         <Stack.Screen name="Ranks" component={RanksScreen} />
         <Stack.Screen name="AddRankScreen" component={AddRankScreen} />
+        <Stack.Screen name="Badges" component={BadgesScreen} />
+        <Stack.Screen name="AddBadgeScreen" component={AddBadgeScreen} />
+        
 
       </Stack.Navigator>
     </NavigationContainer>
